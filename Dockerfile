@@ -20,12 +20,7 @@ COPY main.go main.go
 # by leaving it empty we can ensure that the container and binary shipped on it will have the same platform.
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o http-headers main.go
 
-FROM ubuntu:oracular
-
-WORKDIR /
-COPY --from=builder /workspace/http-headers .
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates && \
-    rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
-
-ENTRYPOINT ["sleep", "infinity"]
+FROM alpine:3.22.0
+COPY --from=builder /workspace/http-headers /sbin/http-headers
+EXPOSE 8080
+ENTRYPOINT ["/sbin/http-headers"]
